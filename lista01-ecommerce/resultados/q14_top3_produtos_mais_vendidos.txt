@@ -1,0 +1,34 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT p.id, p.name, SUM(op.quantity) AS qtd_vendida
+FROM orders_products op
+JOIN orders   o ON o.id = op.order_id
+JOIN products p ON p.id = op.product_id
+WHERE o.status <> 'canceled'
+GROUP BY p.id, p.name
+ORDER BY qtd_vendida DESC, p.name
+LIMIT 3;
+ id |           name            | qtd_vendida 
+----+---------------------------+-------------
+  3 | Teclado Mecânico Logitech |           3
+  2 | Mouse Logitech MX         |           2
+  1 | Notebook Dell Inspiron    |           2
+(3 rows)
+
+SELECT p.id, p.name, SUM(op.quantity) AS qtd_vendida
+FROM orders_products op
+JOIN orders   o ON o.id = op.order_id
+JOIN products p ON p.id = op.product_id
+WHERE o.status <> 'canceled'
+GROUP BY p.id, p.name
+ORDER BY qtd_vendida DESC
+FETCH FIRST 3 ROWS WITH TIES;
+ id |           name            | qtd_vendida 
+----+---------------------------+-------------
+  3 | Teclado Mecânico Logitech |           3
+  2 | Mouse Logitech MX         |           2
+  5 | Webcam HD Logitech        |           2
+  1 | Notebook Dell Inspiron    |           2
+(4 rows)
+

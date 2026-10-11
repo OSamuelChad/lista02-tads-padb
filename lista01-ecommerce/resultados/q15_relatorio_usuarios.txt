@@ -1,0 +1,22 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT
+    u.id,
+    u.name,
+    COUNT(o.id)                                                    AS qtd_pedidos,
+    COALESCE(SUM(o.total) FILTER (WHERE o.status <> 'canceled'), 0) AS valor_total_comprado
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+GROUP BY u.id, u.name
+ORDER BY valor_total_comprado DESC, u.name;
+ id |     name     | qtd_pedidos | valor_total_comprado 
+----+--------------+-------------+----------------------
+  1 | Ana Souza    |           2 |              5888.90
+  5 | Elisa Prado  |           2 |              4759.00
+  2 | Bruno Lima   |           2 |              2248.90
+  4 | Diego Santos |           2 |               808.90
+  3 | Carla Alves  |           2 |               618.90
+  6 | Felipe Silva |           0 |                    0
+(6 rows)
+

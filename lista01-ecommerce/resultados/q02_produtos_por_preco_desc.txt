@@ -1,0 +1,19 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT id, name, price
+FROM products
+ORDER BY price DESC;
+ id |             name              |  price   
+----+-------------------------------+----------
+  9 | Notebook Apple Macbook Pro M5 | 19999.00
+  1 | Notebook Dell Inspiron        |  4500.00
+  4 | Monitor 27" Dell              |  1899.00
+  7 | Cadeira Ergonômica Flexform   |  1299.00
+  6 | Headset Gamer Logitech        |   499.90
+  8 | SSD 1TB Kingston              |   459.00
+  3 | Teclado Mecânico Logitech     |   349.90
+  5 | Webcam HD Logitech            |   259.00
+  2 | Mouse Logitech MX             |    89.90
+(9 rows)
+

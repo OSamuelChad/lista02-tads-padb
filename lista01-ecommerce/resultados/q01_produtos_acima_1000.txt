@@ -1,0 +1,15 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT id, name, price
+FROM products
+WHERE price > 1000
+ORDER BY price;
+ id |             name              |  price   
+----+-------------------------------+----------
+  7 | Cadeira Ergonômica Flexform   |  1299.00
+  4 | Monitor 27" Dell              |  1899.00
+  1 | Notebook Dell Inspiron        |  4500.00
+  9 | Notebook Apple Macbook Pro M5 | 19999.00
+(4 rows)
+

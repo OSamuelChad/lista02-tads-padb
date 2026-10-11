@@ -1,0 +1,30 @@
+Pager usage is off.
+DROP INDEX IF EXISTS idx_rental_em_aberto;
+DROP INDEX
+CREATE INDEX idx_rental_em_aberto
+    ON rental (rental_date)
+    WHERE return_date IS NULL;
+CREATE INDEX
+ANALYZE rental;
+ANALYZE
+EXPLAIN ANALYZE
+SELECT rental_id, customer_id, inventory_id, rental_date
+FROM rental
+WHERE return_date IS NULL
+ORDER BY rental_date;
+                                                            QUERY PLAN                                                             
+-----------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_rental_em_aberto on rental  (cost=0.14..17.89 rows=183 width=18) (actual time=0.004..0.021 rows=183 loops=1)
+ Planning Time: 0.051 ms
+ Execution Time: 0.028 ms
+(3 rows)
+
+SELECT relname, pg_size_pretty(pg_relation_size(oid)) AS tamanho
+FROM pg_class
+WHERE relname IN ('idx_rental_em_aberto', 'rental_pkey');
+       relname        | tamanho 
+----------------------+---------
+ rental_pkey          | 368 kB
+ idx_rental_em_aberto | 16 kB
+(2 rows)
+

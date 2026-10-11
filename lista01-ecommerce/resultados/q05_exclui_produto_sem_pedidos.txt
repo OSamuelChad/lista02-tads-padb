@@ -1,0 +1,24 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+BEGIN;
+BEGIN
+DELETE FROM products
+WHERE id = (
+    SELECT p.id
+    FROM products p
+    WHERE NOT EXISTS (
+        SELECT 1 FROM orders_products op WHERE op.product_id = p.id
+    )
+    ORDER BY p.id
+    LIMIT 1
+)
+RETURNING id, name;
+ id |             name              
+----+-------------------------------
+  9 | Notebook Apple Macbook Pro M5
+(1 row)
+
+DELETE 1
+ROLLBACK;
+ROLLBACK

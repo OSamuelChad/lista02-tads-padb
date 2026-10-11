@@ -1,0 +1,16 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT u.id, u.name, u.email
+FROM users u
+WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)
+ORDER BY u.id;
+ id |     name     |      email      
+----+--------------+-----------------
+  1 | Ana Souza    | ana@tads.ifrn
+  2 | Bruno Lima   | bruno@tads.ifrn
+  3 | Carla Alves  | carla@tads.ifrn
+  4 | Diego Santos | diego@tads.ifrn
+  5 | Elisa Prado  | elisa@tads.ifrn
+(5 rows)
+

@@ -1,0 +1,28 @@
+Pager usage is off.
+DROP INDEX IF EXISTS idx_customer_email_lower;
+DROP INDEX
+CREATE INDEX idx_customer_email_lower
+    ON customer (LOWER(email));
+CREATE INDEX
+ANALYZE customer;
+ANALYZE
+EXPLAIN ANALYZE
+SELECT customer_id, first_name, last_name, email
+FROM customer
+WHERE LOWER(email) = LOWER('MARY.SMITH@sakilacustomer.org');
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_customer_email_lower on customer  (cost=0.28..8.29 rows=1 width=49) (actual time=0.008..0.008 rows=1 loops=1)
+   Index Cond: (lower((email)::text) = 'mary.smith@sakilacustomer.org'::text)
+ Planning Time: 0.046 ms
+ Execution Time: 0.011 ms
+(4 rows)
+
+SELECT customer_id, first_name, last_name, email
+FROM customer
+WHERE LOWER(email) = LOWER('MARY.SMITH@sakilacustomer.org');
+ customer_id | first_name | last_name |             email             
+-------------+------------+-----------+-------------------------------
+           1 | Mary       | Smith     | mary.smith@sakilacustomer.org
+(1 row)
+

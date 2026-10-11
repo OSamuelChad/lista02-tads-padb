@@ -1,0 +1,87 @@
+Pager usage is off.
+CREATE TABLE IF NOT EXISTS customer_rental_stats (
+    customer_id   INTEGER PRIMARY KEY REFERENCES customer (customer_id),
+    total_rentals INT NOT NULL DEFAULT 0
+);
+psql:q10_trigger_rental_stats.sql:13: NOTICE:  relation "customer_rental_stats" already exists, skipping
+CREATE TABLE
+INSERT INTO customer_rental_stats (customer_id, total_rentals)
+SELECT c.customer_id, COUNT(r.rental_id)
+FROM customer c
+LEFT JOIN rental r ON r.customer_id = c.customer_id
+GROUP BY c.customer_id
+ON CONFLICT (customer_id)
+DO UPDATE SET total_rentals = EXCLUDED.total_rentals;
+INSERT 0 599
+CREATE OR REPLACE FUNCTION fn_incrementa_customer_rental_stats()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- "Verifique a existência": se o cliente ainda não tem linha de
+    -- estatística (ex.: cliente novo), cria com 1; senão, incrementa.
+    -- O upsert é atômico e evita condição de corrida entre UPDATE e INSERT.
+    INSERT INTO customer_rental_stats (customer_id, total_rentals)
+    VALUES (NEW.customer_id, 1)
+    ON CONFLICT (customer_id)
+    DO UPDATE SET total_rentals = customer_rental_stats.total_rentals + 1;
+
+    RETURN NULL;
+END;
+$$;
+CREATE FUNCTION
+DROP TRIGGER IF EXISTS trg_incrementa_customer_rental_stats ON rental;
+DROP TRIGGER
+CREATE TRIGGER trg_incrementa_customer_rental_stats
+AFTER INSERT ON rental
+FOR EACH ROW
+EXECUTE FUNCTION fn_incrementa_customer_rental_stats();
+CREATE TRIGGER
+SELECT COUNT(*) AS divergencias
+FROM customer_rental_stats s
+JOIN (SELECT customer_id, COUNT(*) AS qtd FROM rental GROUP BY customer_id) r
+  ON r.customer_id = s.customer_id
+WHERE r.qtd <> s.total_rentals;
+ divergencias 
+--------------
+            0
+(1 row)
+
+BEGIN;
+BEGIN
+SELECT customer_id, total_rentals AS antes
+FROM customer_rental_stats WHERE customer_id = 1;
+ customer_id | antes 
+-------------+-------
+           1 |    32
+(1 row)
+
+INSERT INTO rental (rental_date, inventory_id, customer_id, staff_id)
+VALUES (now(), 1, 1, 1);
+INSERT 0 1
+SELECT customer_id, total_rentals AS depois
+FROM customer_rental_stats WHERE customer_id = 1;
+ customer_id | depois 
+-------------+--------
+           1 |     33
+(1 row)
+
+ROLLBACK;
+ROLLBACK
+BEGIN;
+BEGIN
+INSERT INTO customer (store_id, first_name, last_name, email, address_id)
+VALUES (1, 'Novo', 'Cliente', 'novo.cliente@sakilacustomer.org', 1)
+RETURNING customer_id AS novo_customer_id 
+INSERT 0 1
+INSERT INTO rental (rental_date, inventory_id, customer_id, staff_id)
+VALUES (now(), 1, 603, 1);
+INSERT 0 1
+SELECT * FROM customer_rental_stats WHERE customer_id = 603;
+ customer_id | total_rentals 
+-------------+---------------
+         603 |             1
+(1 row)
+
+ROLLBACK;
+ROLLBACK

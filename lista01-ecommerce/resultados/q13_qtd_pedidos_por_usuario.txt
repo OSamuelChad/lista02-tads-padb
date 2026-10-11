@@ -1,0 +1,18 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT u.id, u.name, COUNT(o.id) AS qtd_pedidos
+FROM users u
+LEFT JOIN orders o ON o.user_id = u.id
+GROUP BY u.id, u.name
+ORDER BY qtd_pedidos DESC, u.name;
+ id |     name     | qtd_pedidos 
+----+--------------+-------------
+  1 | Ana Souza    |           2
+  2 | Bruno Lima   |           2
+  3 | Carla Alves  |           2
+  4 | Diego Santos |           2
+  5 | Elisa Prado  |           2
+  6 | Felipe Silva |           0
+(6 rows)
+

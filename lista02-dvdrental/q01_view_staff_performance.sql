@@ -1,0 +1,28 @@
+
+\pset pager off
+
+
+CREATE OR REPLACE VIEW v_staff_performance AS
+SELECT
+    s.staff_id,
+    s.first_name || ' ' || s.last_name         AS nome_completo,
+    ci.city || ', ' || co.country              AS endereco_loja,
+    COALESCE(r.total_locacoes, 0)              AS total_locacoes,
+    COALESCE(p.total_arrecadado, 0)::numeric(12,2) AS total_arrecadado
+FROM staff s
+JOIN store   st ON st.store_id   = s.store_id
+JOIN address a  ON a.address_id  = st.address_id
+JOIN city    ci ON ci.city_id    = a.city_id
+JOIN country co ON co.country_id = ci.country_id
+LEFT JOIN (
+    SELECT staff_id, COUNT(*) AS total_locacoes
+    FROM rental
+    GROUP BY staff_id
+) r ON r.staff_id = s.staff_id
+LEFT JOIN (
+    SELECT staff_id, SUM(amount) AS total_arrecadado
+    FROM payment
+    GROUP BY staff_id
+) p ON p.staff_id = s.staff_id;
+
+SELECT * FROM v_staff_performance ORDER BY staff_id;

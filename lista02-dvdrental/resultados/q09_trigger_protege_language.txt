@@ -1,0 +1,69 @@
+Pager usage is off.
+ALTER TABLE film
+    ADD COLUMN IF NOT EXISTS original_language_id SMALLINT
+    REFERENCES language (language_id);
+psql:q09_trigger_protege_language.sql:13: NOTICE:  column "original_language_id" of relation "film" already exists, skipping
+ALTER TABLE
+CREATE OR REPLACE FUNCTION fn_protege_language()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_qtd_filmes INTEGER;
+BEGIN
+    SELECT COUNT(*)
+      INTO v_qtd_filmes
+      FROM film
+     WHERE language_id          = OLD.language_id
+        OR original_language_id = OLD.language_id;
+
+    IF v_qtd_filmes > 0 THEN
+        RAISE EXCEPTION
+            'Não é possível excluir o idioma "%" (id %): existem % filme(s) vinculados a ele.',
+            TRIM(OLD.name), OLD.language_id, v_qtd_filmes
+            USING ERRCODE = 'foreign_key_violation',
+                  HINT    = 'Reatribua os filmes a outro idioma antes de excluir.';
+    END IF;
+
+    RETURN OLD;  -- BEFORE DELETE: retornar OLD permite a exclusão
+END;
+$$;
+CREATE FUNCTION
+DROP TRIGGER IF EXISTS trg_protege_language ON language;
+DROP TRIGGER
+CREATE TRIGGER trg_protege_language
+BEFORE DELETE ON language
+FOR EACH ROW
+EXECUTE FUNCTION fn_protege_language();
+CREATE TRIGGER
+BEGIN;
+BEGIN
+DELETE FROM language WHERE language_id = 1;
+psql:q09_trigger_protege_language.sql:50: ERROR:  Não é possível excluir o idioma "English" (id 1): existem 1000 filme(s) vinculados a ele.
+HINT:  Reatribua os filmes a outro idioma antes de excluir.
+CONTEXT:  PL/pgSQL function fn_protege_language() line 12 at RAISE
+ROLLBACK;
+ROLLBACK
+BEGIN;
+BEGIN
+UPDATE film SET original_language_id = 2 WHERE film_id = 1;
+UPDATE 1
+DELETE FROM language WHERE language_id = 2;
+psql:q09_trigger_protege_language.sql:56: ERROR:  Não é possível excluir o idioma "Italian" (id 2): existem 1 filme(s) vinculados a ele.
+HINT:  Reatribua os filmes a outro idioma antes de excluir.
+CONTEXT:  PL/pgSQL function fn_protege_language() line 12 at RAISE
+ROLLBACK;
+ROLLBACK
+BEGIN;
+BEGIN
+INSERT INTO language (name) VALUES ('Klingon') RETURNING language_id;
+ language_id 
+-------------
+          10
+(1 row)
+
+INSERT 0 1
+DELETE FROM language WHERE name = 'Klingon';
+DELETE 1
+ROLLBACK;
+ROLLBACK

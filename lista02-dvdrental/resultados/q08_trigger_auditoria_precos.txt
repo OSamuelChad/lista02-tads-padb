@@ -1,0 +1,46 @@
+Pager usage is off.
+CREATE TABLE IF NOT EXISTS film_cost_audit (
+    audit_id   SERIAL PRIMARY KEY,
+    film_id    INTEGER       NOT NULL REFERENCES film (film_id),
+    old_cost   NUMERIC(5,2),
+    new_cost   NUMERIC(5,2),
+    changed_at TIMESTAMP     NOT NULL DEFAULT now()
+);
+psql:q08_trigger_auditoria_precos.sql:16: NOTICE:  relation "film_cost_audit" already exists, skipping
+CREATE TABLE
+CREATE OR REPLACE FUNCTION fn_audita_replacement_cost()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO film_cost_audit (film_id, old_cost, new_cost, changed_at)
+    VALUES (NEW.film_id, OLD.replacement_cost, NEW.replacement_cost, now());
+
+    RETURN NULL;  -- valor de retorno é ignorado em triggers AFTER
+END;
+$$;
+CREATE FUNCTION
+DROP TRIGGER IF EXISTS trg_audita_replacement_cost ON film;
+DROP TRIGGER
+CREATE TRIGGER trg_audita_replacement_cost
+AFTER UPDATE ON film
+FOR EACH ROW
+WHEN (OLD.replacement_cost IS DISTINCT FROM NEW.replacement_cost)
+EXECUTE FUNCTION fn_audita_replacement_cost();
+CREATE TRIGGER
+BEGIN;
+BEGIN
+UPDATE film SET rental_rate = rental_rate WHERE film_id = 1;
+UPDATE 1
+UPDATE film SET replacement_cost = replacement_cost WHERE film_id = 1;
+UPDATE 1
+UPDATE film SET replacement_cost = replacement_cost + 5 WHERE film_id = 1;
+UPDATE 1
+SELECT * FROM film_cost_audit WHERE film_id = 1;
+ audit_id | film_id | old_cost | new_cost |         changed_at         
+----------+---------+----------+----------+----------------------------
+        4 |       1 |    20.99 |    25.99 | 2026-10-10 16:23:55.035578
+(1 row)
+
+ROLLBACK;
+ROLLBACK

@@ -1,0 +1,27 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+BEGIN;
+BEGIN
+SELECT id, name, price AS preco_antes
+FROM products
+WHERE name ILIKE '%dell%';
+ id |          name          | preco_antes 
+----+------------------------+-------------
+  1 | Notebook Dell Inspiron |     4500.00
+  4 | Monitor 27" Dell       |     1899.00
+(2 rows)
+
+UPDATE products
+SET price = ROUND(price * 1.10, 2)
+WHERE name ILIKE '%dell%'
+RETURNING id, name, price AS preco_depois;
+ id |          name          | preco_depois 
+----+------------------------+--------------
+  1 | Notebook Dell Inspiron |      4950.00
+  4 | Monitor 27" Dell       |      2088.90
+(2 rows)
+
+UPDATE 2
+ROLLBACK;
+ROLLBACK

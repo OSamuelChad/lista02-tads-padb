@@ -1,0 +1,16 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+BEGIN;
+BEGIN
+DELETE FROM products
+WHERE name ILIKE '%macbook%'
+RETURNING id, name, price;
+ id |             name              |  price   
+----+-------------------------------+----------
+  9 | Notebook Apple Macbook Pro M5 | 19999.00
+(1 row)
+
+DELETE 1
+ROLLBACK;
+ROLLBACK

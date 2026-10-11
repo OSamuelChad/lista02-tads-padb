@@ -1,0 +1,14 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT id, name, price,
+       (SELECT ROUND(AVG(price), 2) FROM products) AS preco_medio
+FROM products
+WHERE price > (SELECT AVG(price) FROM products)
+ORDER BY price DESC;
+ id |             name              |  price   | preco_medio 
+----+-------------------------------+----------+-------------
+  9 | Notebook Apple Macbook Pro M5 | 19999.00 |     3261.63
+  1 | Notebook Dell Inspiron        |  4500.00 |     3261.63
+(2 rows)
+

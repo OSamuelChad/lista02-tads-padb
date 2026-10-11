@@ -1,0 +1,12 @@
+Pager usage is off.
+SET search_path TO lista01;
+SET
+SELECT u.id, u.name, u.email
+FROM users u
+WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)
+ORDER BY u.id;
+ id |     name     |      email       
+----+--------------+------------------
+  6 | Felipe Silva | felipe@tads.ifrn
+(1 row)
+
